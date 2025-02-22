@@ -25,5 +25,18 @@ services:
     volumes:
       - kafka_data:/var/lib/kafka/data
 
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: algotrading_monitor
+      POSTGRES_USER: algotrading
+      POSTGRES_PASSWORD: algotrading_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
 volumes:
   kafka_data:
+  postgres_data:
