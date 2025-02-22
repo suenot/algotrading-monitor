@@ -17,7 +17,7 @@ class GitCloningService:
             value_serializer=lambda m: json.dumps(m).encode('utf-8')
         )
         self.db_config = db_config
-        self.clone_dir = os.path.join(os.getcwd(), 'cloned_repos')
+        self.clone_dir = os.path.join(os.getcwd(), os.getenv('GIT_CLONE_DIR', 'cloned_repos'))
         os.makedirs(self.clone_dir, exist_ok=True)
 
     def update_repository_status(self, repo_url, status, error=None):
@@ -84,16 +84,20 @@ class GitCloningService:
 
 if __name__ == "__main__":
     # Configuration
+    # Load environment variables
+    from dotenv import load_dotenv
+    load_dotenv()
+    
     kafka_config = {
-        'bootstrap_servers': 'localhost:9092'
+        'bootstrap_servers': os.getenv('KAFKA_BOOTSTRAP_SERVERS')
     }
     
     db_config = {
-        'dbname': 'algotrading_monitor',
-        'user': 'postgres',
-        'password': 'postgres',
-        'host': 'localhost',
-        'port': '5432'
+        'dbname': os.getenv('DB_NAME'),
+        'user': os.getenv('DB_USER'),
+        'password': os.getenv('DB_PASSWORD'),
+        'host': os.getenv('DB_HOST'),
+        'port': os.getenv('DB_PORT')
     }
     
     # Start the service

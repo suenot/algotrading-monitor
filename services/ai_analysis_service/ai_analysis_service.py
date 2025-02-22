@@ -162,16 +162,20 @@ class AIAnalysisService:
 
 if __name__ == "__main__":
     # Configuration
+    # Load environment variables
+    from dotenv import load_dotenv
+    load_dotenv()
+    
     kafka_config = {
-        'bootstrap_servers': 'localhost:9092'
+        'bootstrap_servers': os.getenv('KAFKA_BOOTSTRAP_SERVERS')
     }
     
     db_config = {
-        'dbname': 'algotrading_monitor',
-        'user': 'algotrading',
-        'password': 'algotrading_pass',
-        'host': 'localhost',
-        'port': '5432'
+        'dbname': os.getenv('DB_NAME'),
+        'user': os.getenv('DB_USER'),
+        'password': os.getenv('DB_PASSWORD'),
+        'host': os.getenv('DB_HOST'),
+        'port': os.getenv('DB_PORT')
     }
     
     # Start the service
