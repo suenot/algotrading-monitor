@@ -39,11 +39,18 @@ class AIAnalysisService:
         self.db_config = db_config
 
         # Initialize AI client
+        models = os.getenv('OPENROUTER_MODELS', '').split(',')
+        model_providers = {}
+        for model in models:
+            provider_key = f'OPENROUTER_PROVIDERS_{model}'
+            providers = os.getenv(provider_key, 'any').split(',')
+            model_providers[model] = providers
+
         config = OpenRouterConfig(
-            model=OpenRouterModels.OPENAI_GPT_4O,
+            models=models,
+            model_providers=model_providers,
             verbose=True,
-            fallback_to_free=True,
-            order_preference=["anthropic", "openai", "google"]
+            fallback_to_free=True
         )
         self.ai_client = AiBaseClient(
             config=config,
