@@ -37,6 +37,89 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
 
+  git_cloning_service:
+    build:
+      context: ./services/git_cloning_service
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_GROUP_ID=git-cloning-service
+      - DB_NAME=algotrading_monitor
+      - DB_USER=algotrading
+      - DB_PASSWORD=algotrading_pass
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - GIT_CLONE_DIR=/app/cloned_repos
+      - GIT_TIMEOUT=300
+    volumes:
+      - ./services/git_cloning_service:/app
+      - git_repos:/app/cloned_repos
+
+  file_selection_service:
+    build:
+      context: ./services/file_selection_service
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_GROUP_ID=file-selection-service
+      - DB_NAME=algotrading_monitor
+      - DB_USER=algotrading
+      - DB_PASSWORD=algotrading_pass
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - FILE_SELECTION_BATCH_SIZE=100
+    volumes:
+      - ./services/file_selection_service:/app
+      - git_repos:/app/cloned_repos:ro
+
+  rag_loading_service:
+    build:
+      context: ./services/rag_loading_service
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_GROUP_ID=rag-loading-service
+      - DB_NAME=algotrading_monitor
+      - DB_USER=algotrading
+      - DB_PASSWORD=algotrading_pass
+      - DB_HOST=postgres
+      - DB_PORT=5432
+    volumes:
+      - ./services/rag_loading_service:/app
+      - git_repos:/app/cloned_repos:ro
+
+  ai_analysis_service:
+    build:
+      context: ./services/ai_analysis_service
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_GROUP_ID=ai-analysis-service
+      - DB_NAME=algotrading_monitor
+      - DB_USER=algotrading
+      - DB_PASSWORD=algotrading_pass
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENROUTER_MODELS=${OPENROUTER_MODELS}
+      - ANALYSIS_TIMEOUT=600
+    volumes:
+      - ./services/ai_analysis_service:/app
+      - git_repos:/app/cloned_repos:ro
+
 volumes:
   kafka_data:
   postgres_data:
+  git_repos:
